@@ -46,20 +46,12 @@ class StepTestCase(unittest.TestCase):
         bucket_name = self.step_config["STORAGE"]["BUCKET_NAME"]
         self.step.upload_file(f, candid, bucket_name)
         mock_client.assert_called_with(
-            "s3",
-            aws_access_key_id=self.step_config["STORAGE"]["AWS_ACCESS_KEY"],
-            aws_secret_access_key=self.step_config["STORAGE"]["AWS_SECRET_ACCESS_KEY"],
-            region_name=self.step_config["STORAGE"]["REGION_NAME"]
+            "s3"
         )
         mock_client().upload_fileobj.assert_called_with(f,bucket_name, f"{321}.avro")
 
     @mock.patch("s3_step.S3Step.upload_file")
     def test_execute(self, mock_upload):
-        message = {"objectId": "obj", "candidate": {"candid": 123 }}
+        message = {"objectId": "obj", "candid": 123 }
         self.step.execute(message)
         mock_upload.assert_called_once()
-
-
-    def test_insert_step_metadata(self):
-        self.step.insert_step_metadata()
-        self.step.db.query().get_or_create.assert_called_once()

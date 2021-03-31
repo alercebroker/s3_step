@@ -25,27 +25,11 @@ class S3Step(GenericStep):
         self,
         consumer=None,
         config=None,
-        db_connection=None,
         level=logging.INFO,
         **step_args
     ):
+        self.key = config.get("key", "candid")
         super().__init__(consumer, config=config, level=level)
-        self.db = db_connection or SQLConnection()
-        self.db.connect(self.config["DB_CONFIG"]["SQL"])
-        if not step_args.get("test_mode", False):
-            self.insert_step_metadata()
-
-    def insert_step_metadata(self):
-        """
-        Inserts step version and other metadata to step table.
-        """
-        self.db.query(Step).get_or_create(
-            filter_by={"step_id": self.config["STEP_METADATA"]["STEP_VERSION"]},
-            name=self.config["STEP_METADATA"]["STEP_NAME"],
-            version=self.config["STEP_METADATA"]["STEP_VERSION"],
-            comments=self.config["STEP_METADATA"]["STEP_COMMENTS"],
-            date=datetime.datetime.now(),
-        )
 
     def get_object_url(self, bucket_name, candid):
         """
@@ -88,12 +72,7 @@ class S3Step(GenericStep):
         bucket_name : str
             name of the s3 bucket
         """
-        s3 = boto3.client(
-            "s3",
-            aws_access_key_id=self.config["STORAGE"]["AWS_ACCESS_KEY"],
-            aws_secret_access_key=self.config["STORAGE"]["AWS_SECRET_ACCESS_KEY"],
-            region_name=self.config["STORAGE"]["REGION_NAME"],
-        )
+        s3 = boto3.client("s3")
         reverse_candid = self.reverse_candid(candid)
         object_name = "{}.avro".format(reverse_candid)
         s3.upload_fileobj(f, bucket_name, object_name)
@@ -111,11 +90,15 @@ class S3Step(GenericStep):
         reversed = str(candid)[::-1]
         return reversed
 
-
+    def get_candid(self,message,key):
+        if callable(key):
+            return key(message)
+        else:
+            return message[key]
 
     def execute(self, message):
         self.logger.debug(message["objectId"])
         f = io.BytesIO(self.consumer.messages[0].value())
         self.upload_file(
-            f, message["candidate"]["candid"], self.config["STORAGE"]["BUCKET_NAME"]
+            f, self.get_candid(message,self.key), self.config["STORAGE"]["BUCKET_NAME"]
         )
