@@ -95,8 +95,6 @@ STEP_METADATA = {
 STORAGE_CONFIG = {
     "BUCKET_NAME": os.environ["BUCKET_NAME"],
     "REGION_NAME": os.environ["REGION_NAME"],
-    "AWS_ACCESS_KEY": os.environ["AWS_ACCESS_KEY"],
-    "AWS_SECRET_ACCESS_KEY": os.environ["AWS_SECRET_ACCESS_KEY"],
 }
 
 LOGGING_DEBUG = os.getenv("LOGGING_DEBUG", False)
@@ -107,4 +105,5 @@ STEP_CONFIG = {
     "DB_CONFIG": DB_CONFIG,
     "METRICS_CONFIG": METRICS_CONFIG,
     "STEP_METADATA": STEP_METADATA,
+    "KEY": os.environ.get("KEY", "candid")
 }

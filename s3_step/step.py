@@ -28,8 +28,8 @@ class S3Step(GenericStep):
         level=logging.INFO,
         **step_args
     ):
-        self.key = config.get("key", "candid")
         super().__init__(consumer, config=config, level=level)
+        self.key = self.config["KEY"]
 
     def get_object_url(self, bucket_name, candid):
         """

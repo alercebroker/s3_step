@@ -25,6 +25,7 @@ class StepTestCase(unittest.TestCase):
             "STORAGE": STORAGE_CONFIG,
             "STEP_METADATA": STEP_METADATA,
             "METRICS_CONFIG": METRICS_CONFIG,
+            "KEY": "candid"
         }
         mock_db = mock.create_autospec(SQLConnection)
         mock_consumer = mock.create_autospec(GenericConsumer)
