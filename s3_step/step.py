@@ -26,12 +26,14 @@ class S3Step(GenericStep):
         consumer=None,
         config=None,
         level=logging.INFO,
+        s3_client=None,
         **step_args
     ):
         super().__init__(consumer, config=config, level=level)
         self.key = self.config["KEY"]
+        self.s3_client = s3_client or boto3.client("s3")
 
-    def get_object_url(self, bucket_name, candid):
+    def get_object_url(self, bucket_name, identifier):
         """
         Formats a valid s3 url for an avro file given a bucket and candid.
         The format for saving avros on s3 is <candid>.avro and they are
@@ -44,10 +46,9 @@ class S3Step(GenericStep):
         candid : int
             candid of the avro to be stored
         """
-        reverse_candid = self.reverse_candid(candid)
-        return "https://{}.s3.amazonaws.com/{}.avro".format(bucket_name, reverse_candid)
+        return "https://{}.s3.amazonaws.com/{}.avro".format(bucket_name, identifier)
 
-    def upload_file(self, f, candid, bucket_name):
+    def upload_file(self, f, identifier, bucket_name):
         """
         Uploads a avro file to s3 storage
 
@@ -72,25 +73,11 @@ class S3Step(GenericStep):
         bucket_name : str
             name of the s3 bucket
         """
-        s3 = boto3.client("s3")
-        reverse_candid = self.reverse_candid(candid)
-        object_name = "{}.avro".format(reverse_candid)
-        s3.upload_fileobj(f, bucket_name, object_name)
-        return self.get_object_url(bucket_name, candid)
+        object_name = "{}.avro".format(identifier)
+        self.s3_client.upload_fileobj(f, bucket_name, object_name)
+        return self.get_object_url(bucket_name, identifier)
 
-    def reverse_candid(self, candid):
-        """
-        Returns reverse digits of the candid
-
-        Parameters
-        ----------
-        candid : int or str
-            original candid to be reversed
-        """
-        reversed = str(candid)[::-1]
-        return reversed
-
-    def get_candid(self,message,key):
+    def get_candid(self, message, key):
         if callable(key):
             return key(message)
         else:
@@ -100,5 +87,5 @@ class S3Step(GenericStep):
         self.logger.debug(message["objectId"])
         f = io.BytesIO(self.consumer.messages[0].value())
         self.upload_file(
-            f, self.get_candid(message,self.key), self.config["STORAGE"]["BUCKET_NAME"]
+            f, self.get_candid(message, self.key), self.config["STORAGE"]["BUCKET_NAME"]
         )
