@@ -99,11 +99,17 @@ STORAGE_CONFIG = {
 
 LOGGING_DEBUG = os.getenv("LOGGING_DEBUG", False)
 
+def generate_key(message):
+
+    # Get the last source of an object by max mjd value 
+    last_source_id = max(message['sources'], key=lambda x: x['mjd'])['sourceid']
+    return "{}_{}".format(message['objectid'], last_source_id)
+
 STEP_CONFIG = {
     "STORAGE": STORAGE_CONFIG,
     "CONSUMER_CONFIG": CONSUMER_CONFIG,
     "DB_CONFIG": DB_CONFIG,
     "METRICS_CONFIG": METRICS_CONFIG,
     "STEP_METADATA": STEP_METADATA,
-    "KEY": os.environ.get("KEY", "candid")
+    "KEY": generate_key
 }
