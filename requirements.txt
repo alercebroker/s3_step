@@ -1,3 +1,2 @@
 boto3>=1.10.8
 apf-base>=1.0.3
--e git+https://git@github.com/alercebroker/db-plugins.git#egg=db-plugins

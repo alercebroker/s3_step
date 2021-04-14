@@ -73,12 +73,6 @@ class S3Step(GenericStep):
         bucket_name : str
             name of the s3 bucket
         """
-        s3 = boto3.client(
-            "s3",
-            aws_access_key_id=self.config["STORAGE"]["AWS_ACCESS_KEY"],
-            aws_secret_access_key=self.config["STORAGE"]["AWS_SECRET_ACCESS_KEY"],
-            region_name=self.config["STORAGE"]["REGION_NAME"],
-        )
         object_name = "{}.avro".format(identifier)
         self.s3_client.upload_fileobj(f, bucket_name, object_name)
         return self.get_object_url(bucket_name, identifier)
