@@ -3,8 +3,6 @@ import logging
 import io
 import math
 import datetime
-from db_plugins.db.sql import SQLConnection
-from db_plugins.db.sql.models import Step
 import boto3
 from botocore.config import Config
 
